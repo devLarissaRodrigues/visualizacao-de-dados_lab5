@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volume de Chuva Acumulada - ECharts</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #chart {
+            width: 100%;
+            height: 500px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        h3 {
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            margin: 20px 0;
+        }
+
+        .label {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        input[type="number"] {
+            padding: 5px;
+            margin-right: 20px;
+            width: 70px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Volume de Chuva Acumulada</h2>
+    <h3>Fazenda Carnaúba - Taperoá - PB</h3>
+
+    <div class="controls">
+        <label class="label" for="min-rain">Variação mínima (mm):</label>
+        <input type="number" id="min-rain" value="200" min="0">
+        <label class="label" for="max-rain">Variação máxima (mm):</label>
+        <input type="number" id="max-rain" value="500" max="500">
+    </div>
+
+    <div id="chart"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var chartDom = document.getElementById("chart");
+            var myChart = echarts.init(chartDom);
+
+            var data = [
+                [2013, 280.0],
+                [2014, 404.6],
+                [2015, 386.7],
+                [2016, 295.0],
+                [2017, 211.5],
+                [2018, 389.2],
+                [2019, 412.3],
+                [2020, 498.7],
+                [2021, 320.4],
+                [2022, 275.6],
+                [2023, 310.9]
+            ];
+            function filterData(min, max) {
+                return data.filter(item => item[1] >= min && item[1] <= max);
+            }
+
+            function getOption(filteredData) {
+                return {
+                    tooltip: {
+                        trigger: 'axis',
+                        formatter: function(params) {
+                            return params[0].name + ': ' + params[0].value[1] + ' mm';
+                        }
+                    },
+                    toolbox: {
+                        feature: {
+                            dataZoom: { yAxisIndex: 'none' },
+                            restore: {},
+                            saveAsImage: {}
+                        }
+                    },
+                    xAxis: {
+                        type: 'time',
+                        boundaryGap: false,
+                        axisLabel: {
+                            formatter: '{yyyy}'
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        axisLabel: {
+                            formatter: '{value} mm'
+                        }
+                    },
+                    dataZoom: [
+                        { type: 'inside', start: 0, end: 100 },
+                        { start: 0, end: 100 }
+                    ],
+                    series: [
+                        {
+                            name: 'Volume de Chuva (mm)',
+                            type: 'line',
+                            smooth: true,
+                            symbol: 'circle',
+                            areaStyle: {
+                                color: 'rgba(70, 130, 180, 0.5)'  
+                            },
+                            itemStyle: {
+                                color: '#4682B4'  
+                            },
+                            lineStyle: {
+                                color: '#4682B4'  
+                            },
+                            data: filteredData.map(item => [new Date(item[0], 0, 1), item[1]])
+                        }
+                    ]
+                };
+            }
+            var filteredData = filterData(200, 500);
+            myChart.setOption(getOption(filteredData));
+
+            document.getElementById('min-rain').addEventListener('input', function() {
+                var min = parseFloat(this.value);
+                var max = parseFloat(document.getElementById('max-rain').value);
+                filteredData = filterData(min, max);
+                myChart.setOption(getOption(filteredData));
+            });
+
+            document.getElementById('max-rain').addEventListener('input', function() {
+                var min = parseFloat(document.getElementById('min-rain').value);
+                var max = parseFloat(this.value);
+                filteredData = filterData(min, max);
+                myChart.setOption(getOption(filteredData));
+            });
+        });
+    </script>
+
+</body>
+</html>
